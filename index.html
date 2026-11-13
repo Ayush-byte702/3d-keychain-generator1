@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Keychain Studio — Custom 3D Keychains</title>
+<style>
+:root{--bg:#f4f6fb;--panel:#fff;--ink:#172033;--muted:#68738a;--line:#e5e9f2;--accent:#315efb;--accent2:#2449ce;--shadow:0 12px 34px rgba(29,42,77,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{height:68px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 max(22px,calc((100vw - 1180px)/2));position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:18px;letter-spacing:-.4px}.logo{width:34px;height:34px;border-radius:11px;background:var(--accent);color:white;display:grid;place-items:center;font-size:19px}
+.header-note{font-size:12px;color:var(--muted);font-weight:600}
+main{max-width:1180px;margin:30px auto;padding:0 22px 48px}.intro{margin-bottom:22px}.eyebrow{color:var(--accent);font-size:11px;letter-spacing:1.4px;font-weight:800}.intro h1{font-size:30px;line-height:1.15;margin:6px 0}.intro p{color:var(--muted);margin:7px 0 0}
+.layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(340px,.88fr);gap:20px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:19px;box-shadow:var(--shadow);overflow:hidden}.panel-head{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}.panel-head strong{font-size:14px}.live{font-size:11px;color:#13834c;font-weight:800;display:flex;align-items:center;gap:6px}.live:before{content:"";width:7px;height:7px;background:#21b66b;border-radius:50%}
+#viewer{height:450px;background:radial-gradient(ellipse at 50% 44%,#fff 0,#f3f6fc 68%,#edf1f8 100%);position:relative;touch-action:pan-y}#viewer canvas{display:block;width:100%;height:100%}.view-hint{position:absolute;bottom:13px;left:0;right:0;text-align:center;color:#8993a6;font-size:11px;pointer-events:none}.view-actions{display:flex;gap:7px}
+.small-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 10px;font-size:11px;color:#526078;cursor:pointer}.small-btn:hover{border-color:#b9c7f8;color:var(--accent)}
+.preview-foot{display:flex;justify-content:space-between;gap:10px;padding:13px 18px;color:var(--muted);font-size:11px;border-top:1px solid var(--line)}
+.controls{padding:20px}.field{margin-bottom:18px}.field:last-child{margin-bottom:0}.field label,.field-title{display:block;font-weight:750;font-size:12px;margin-bottom:8px}.sub{font-size:11px;color:var(--muted);font-weight:500;margin-left:5px}
+input[type=text],select{width:100%;border:1px solid #dce2ed;border-radius:10px;padding:12px 12px;background:#fff;color:var(--ink);font:inherit;outline:none}input[type=text]:focus,select:focus{border-color:#8ba2ff;box-shadow:0 0 0 3px #315efb18}
+.color-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.color-box{border:1px solid var(--line);border-radius:12px;padding:10px}.color-top{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:8px}.color-choice{display:flex;align-items:center;gap:9px}.color-choice input{width:38px;height:32px;border:0;padding:0;background:none;cursor:pointer}.hex{font-size:11px;color:var(--muted);font-family:ui-monospace,monospace}
+.dimensions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.metric{background:#f7f8fc;border:1px solid #edf0f6;border-radius:10px;padding:10px}.metric span{display:block;font-size:10px;color:var(--muted);margin-bottom:3px}.metric b{font-size:13px}
+.price-card{margin-top:19px;background:#17233f;color:#fff;border-radius:15px;padding:16px 17px;display:flex;align-items:center;justify-content:space-between}.price-card small{display:block;color:#b8c4df;font-size:11px}.price{font-size:29px;font-weight:850;letter-spacing:-1px}.price-note{font-size:10px;color:#b8c4df;margin-top:2px}
+.downloads{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.download{border:0;border-radius:11px;padding:13px 10px;font-weight:800;font-size:12px;cursor:pointer}.download.primary{background:var(--accent);color:#fff}.download.secondary{background:#edf1ff;color:#294bc4}.download:hover{filter:brightness(.97);transform:translateY(-1px)}.download:disabled{opacity:.55;cursor:wait;transform:none}
+.note{font-size:10px;line-height:1.5;color:var(--muted);margin-top:11px}.status{font-size:11px;color:#315efb;min-height:16px;margin-top:8px}
+footer{max-width:1180px;margin:0 auto;padding:0 22px 30px;color:#8791a4;font-size:10px}
+@media(max-width:820px){main{margin-top:20px}.layout{grid-template-columns:1fr}#viewer{height:360px}.intro h1{font-size:26px}}
+@media(max-width:420px){header{padding:0 15px}.header-note{display:none}main{padding:0 13px 35px}.controls{padding:16px}.color-row{gap:7px}.dimensions{gap:5px}.metric{padding:8px}.price{font-size:26px}}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"}}
+</script>
+</head>
+<body>
+<header><div class="brand"><div class="logo">K</div>Keychain Studio</div><div class="header-note">DESIGN • PREVIEW • DOWNLOAD</div></header>
+<main>
+  <section class="intro"><div class="eyebrow">MADE TO BE YOURS</div><h1>Design your name keychain.</h1><p>Choose your font and colours, then download a print-ready 3D file.</p></section>
+  <div class="layout">
+    <section class="panel">
+      <div class="panel-head"><strong>3D live preview</strong><span class="live">LIVE MODEL</span></div>
+      <div id="viewer"><div class="view-hint">Drag to rotate · Scroll to zoom</div></div>
+      <div class="preview-foot"><span>Two separate colour parts</span><span id="model-size">Preparing model…</span></div>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><strong>Personalise your keychain</strong><span style="font-size:11px;color:#7b879c">STEP 01 / 01</span></div>
+      <div class="controls">
+        <div class="field"><label for="name">Your name <span class="sub">Up to 14 characters</span></label><input id="name" type="text" maxlength="14" value="AYUSH" placeholder="Type a name"></div>
+        <div class="field"><label for="font">Choose a font</label><select id="font">
+          <option value="helvetiker_regular">Modern — Helvetiker</option>
+          <option value="helvetiker_bold">Bold — Helvetiker</option>
+          <option value="optimer_regular">Clean — Optimer</option>
+          <option value="optimer_bold">Strong — Optimer</option>
+          <option value="gentilis_regular">Classic — Gentilis</option>
+          <option value="gentilis_bold">Classic Bold — Gentilis</option>
+        </select></div>
+        <div class="field"><div class="field-title">Choose your colours</div><div class="color-row">
+          <div class="color-box"><div class="color-top"><span>Body colour</span></div><div class="color-choice"><input id="bodyColor" type="color" value="#2463eb"><span class="hex" id="bodyHex">#2463EB</span></div></div>
+          <div class="color-box"><div class="color-top"><span>Text colour</span></div><div class="color-choice"><input id="textColor" type="color" value="#ffffff"><span class="hex" id="textHex">#FFFFFF</span></div></div>
+        </div></div>
+        <div class="field"><div class="field-title">Model details</div><div class="dimensions">
+          <div class="metric"><span>Estimated weight</span><b id="weight">— g</b></div>
+          <div class="metric"><span>Body thickness</span><b>3 mm</b></div>
+          <div class="metric"><span>Text height</span><b>1 mm</b></div>
+        </div></div>
+        <div class="price-card"><div><small>YOUR KEYCHAIN PRICE</small><div class="price-note">Weight × 3, rounded + ₹5</div></div><div class="price" id="price">₹—</div></div>
+        <div class="downloads"><button class="download primary" id="stlBtn">↓ Download STL</button><button class="download secondary" id="mfBtn">↓ Download 3MF</button></div>
+        <div class="status" id="status" aria-live="polite"></div>
+        <p class="note">Weight and price are estimates using a PLA density of 1.24 g/cm³ and the model's solid volume. Your slicer's final weight can vary with infill, walls and print settings. The 3MF keeps the body and lettering as separate coloured parts.</p>
+      </div>
+    </section>
+  </div>
+</main>
+<footer>Keychain Studio · Runs in your browser. Your design is not uploaded to a server.</footer>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {FontLoader} from 'three/addons/loaders/FontLoader.js';
+import {TextGeometry} from 'three/addons/geometries/TextGeometry.js';
+import {STLExporter} from 'three/addons/exporters/STLExporter.js';
+
+const $=id=>document.getElementById(id);
+const viewer=$('viewer'), status=$('status');
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(34,1,.1,1000);
+camera.position.set(0,-72,58);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+viewer.appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;controls.dampingFactor=.07;controls.minDistance=30;controls.maxDistance=130;
+controls.target.set(0,0,0);
+scene.add(new THREE.HemisphereLight(0xffffff,0x8995aa,2.0));
+const keyLight=new THREE.DirectionalLight(0xffffff,2.4);keyLight.position.set(-30,-40,70);scene.add(keyLight);
+const fillLight=new THREE.DirectionalLight(0xffffff,1.0);fillLight.position.set(30,20,35);scene.add(fillLight);
+const modelGroup=new THREE.Group();scene.add(modelGroup);
+let bodyMesh=null,textMesh=null,currentFont=null,fonts={},buildTimer=null,modelReady=false;
+const fontFiles={
+ helvetiker_regular:'helvetiker_regular.typeface.json',helvetiker_bold:'helvetiker_bold.typeface.json',
+ optimer_regular:'optimer_regular.typeface.json',optimer_bold:'optimer_bold.typeface.json',
+ gentilis_regular:'gentilis_regular.typeface.json',gentilis_bold:'gentilis_bold.typeface.json'
+};
+const fontLoader=new FontLoader();
+function loadFont(key){return new Promise((resolve,reject)=>{
+ if(fonts[key])return resolve(fonts[key]);
+ fontLoader.load('https://cdn.jsdelivr.net/npm/three@0.164.1/examples/fonts/'+fontFiles[key],f=>{fonts[key]=f;resolve(f)},undefined,reject);
+});}
+function roundedRect(w,h,r){const s=new THREE.Shape();const x=-w/2,y=-h/2;
+ s.moveTo(x+r,y);s.lineTo(x+w-r,y);s.quadraticCurveTo(x+w,y,x+w,y+r);
+ s.lineTo(x+w,y+h-r);s.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+ s.lineTo(x+r,y+h);s.quadraticCurveTo(x,y+h,x,y+h-r);
+ s.lineTo(x,y+r);s.quadraticCurveTo(x,y,x+r,y);return s;}
+function createBody(w,h){
+ const shape=roundedRect(w,h,Math.min(4,h/2,w/2));
+ const hole=new THREE.Path();const hx=-w/2+5.2,hy=0,hr=1.8;
+ hole.absarc(hx,hy,hr,0,Math.PI*2,true);shape.holes.push(hole);
+ const g=new THREE.ExtrudeGeometry(shape,{depth:3,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.22,bevelThickness:.22,curveSegments:20});
+ g.translate(0,0,-1.5);g.computeVertexNormals();return g;
+}
+function disposeModel(){for(const m of [...modelGroup.children]){m.geometry?.dispose();m.material?.dispose();}modelGroup.clear();}
+function volumeCm3(geometry,matrix){const pos=geometry.attributes.position;let vol=0;const a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();const tri=new THREE.Vector3();
+ for(let i=0;i<pos.count;i+=3){a.fromBufferAttribute(pos,i).applyMatrix4(matrix);b.fromBufferAttribute(pos,i+1).applyMatrix4(matrix);c.fromBufferAttribute(pos,i+2).applyMatrix4(matrix);tri.crossVectors(b,c);vol+=a.dot(tri)/6;}
+ return Math.abs(vol)/1000;}
+function fitCamera(w,h){const maxDim=Math.max(w,h,25);camera.position.set(0,-maxDim*1.65,maxDim*1.3);controls.target.set(0,0,0);controls.update();}
+async function rebuild(){
+ const name=($('name').value.trim()||'NAME').toUpperCase();
+ const fontKey=$('font').value;
+ status.textContent='Updating 3D model…';modelReady=false;
+ try{
+  const font=await loadFont(fontKey);currentFont=font;disposeModel();
+  const tg=new TextGeometry(name,{font,size:10,height:1,curveSegments:8,bevelEnabled:true,bevelThickness:.12,bevelSize:.08,bevelSegments:2});
+  tg.computeBoundingBox();let box=tg.boundingBox;let textW=box.max.x-box.min.x;
+  const maxTextW=76;const scale=Math.min(1,maxTextW/textW);
+  tg.scale(scale,scale,1);tg.computeBoundingBox();box=tg.boundingBox;
+  const tw=box.max.x-box.min.x,th=box.max.y-box.min.y;
+  const bodyW=Math.max(35,tw+15),bodyH=Math.max(17,th+8);
+  const bodyG=createBody(bodyW,bodyH);
+  bodyMesh=new THREE.Mesh(bodyG,new THREE.MeshStandardMaterial({color:$('bodyColor').value,roughness:.48,metalness:.03}));
+  bodyMesh.position.z=0;modelGroup.add(bodyMesh);
+  tg.translate(-((box.min.x+box.max.x)/2),-((box.min.y+box.max.y)/2),1.5);
+  textMesh=new THREE.Mesh(tg,new THREE.MeshStandardMaterial({color:$('textColor').value,roughness:.42,metalness:.02}));
+  modelGroup.add(textMesh);
+  modelGroup.rotation.set(0,0,0);
+  const bodyVol=volumeCm3(bodyG,bodyMesh.matrixWorld);
+  modelGroup.updateMatrixWorld(true);
+  const textVol=volumeCm3(tg,textMesh.matrixWorld);
+  const grams=(bodyVol+textVol)*1.24;
+  const shownWeight=Math.round(grams*10)/10;
+  const price=Math.round(grams*3)+5;
+  $('weight').textContent=shownWeight.toFixed(1)+' g';
+  $('price').textContent='₹'+price;
+  $('model-size').textContent=bodyW.toFixed(0)+' × '+bodyH.toFixed(0)+' mm';
+  fitCamera(bodyW,bodyH);modelReady=true;status.textContent='';
+ }catch(e){console.error(e);status.textContent='Could not load the font. Check your internet connection and refresh.';}
+}
+function schedule(){clearTimeout(buildTimer);buildTimer=setTimeout(rebuild,180);}
+function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}animate();
+function resize(){const w=viewer.clientWidth,h=viewer.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}new ResizeObserver(resize).observe(viewer);resize();
+['name','font','bodyColor','textColor'].forEach(id=>$(id).addEventListener(id==='name'?'input':'change',()=>{if(id==='bodyColor')$('bodyHex').textContent=$('bodyColor').value.toUpperCase();if(id==='textColor')$('textHex').textContent=$('textColor').value.toUpperCase();schedule();}));
+function downloadBlob(blob,filename){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
+function safeName(){return ($('name').value.trim()||'keychain').replace(/[^a-z0-9_-]/gi,'_').slice(0,30);}
+$('stlBtn').addEventListener('click',()=>{
+ if(!modelReady)return;try{const exporter=new STLExporter();const data=exporter.parse(modelGroup,{binary:true});downloadBlob(new Blob([data],{type:'application/sla'}),safeName()+'.stl');status.textContent='STL downloaded.';}catch(e){console.error(e);status.textContent='STL export failed.';}
+});
+function geometryTo3mfMesh(mesh){
+ const g=mesh.geometry.clone();mesh.updateMatrixWorld(true);g.applyMatrix4(mesh.matrixWorld);
+ const p=g.attributes.position;const verts=[];for(let i=0;i<p.count;i++)verts.push([p.getX(i),p.getY(i),p.getZ(i)]);
+ const tris=[];for(let i=0;i<p.count;i+=3)tris.push([i,i+1,i+2]);
+ return {verts,tris};
+}
+function xmlEscape(s){return String(s).replace(/[<>&'"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c]));}
+$('mfBtn').addEventListener('click',async()=>{
+ if(!modelReady)return;
+ const btn=$('mfBtn');btn.disabled=true;status.textContent='Preparing two-colour 3MF…';
+ try{
+  const JSZip=(await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm')).default;
+  modelGroup.updateMatrixWorld(true);
+  const b=geometryTo3mfMesh(bodyMesh),t=geometryTo3mfMesh(textMesh);
+  const meshXml=m=>{
+   const verts=m.verts.map(v=>`<vertex x="${v[0].toFixed(5)}" y="${v[1].toFixed(5)}" z="${v[2].toFixed(5)}"/>`).join('');
+   const tris=m.tris.map(v=>`<triangle v1="${v[0]}" v2="${v[1]}" v3="${v[2]}"/>`).join('');
+   return `<vertices>${verts}</vertices><triangles>${tris}</triangles>`;
+  };
+  const bc=$('bodyColor').value.toUpperCase(),tc=$('textColor').value.toUpperCase();
+  const xml=`<?xml version="1.0" encoding="UTF-8"?><model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><metadata name="Title">${xmlEscape(safeName())} keychain</metadata><resources><basematerials id="1"><base name="Body" displaycolor="${bc}FF"/><base name="Text" displaycolor="${tc}FF"/></basematerials><object id="2" type="model" name="Keychain body"><mesh>${meshXml(b)}</mesh><pid>1</pid><pindex>0</pindex></object><object id="3" type="model" name="Raised text"><mesh>${meshXml(t)}</mesh><pid>1</pid><pindex>1</pindex></object><object id="4" type="model" name="Two-colour keychain"><components><component objectid="2"/><component objectid="3"/></components></object></resources><build><item objectid="4"/></build></model>`;
+  const zip=new JSZip();zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>');
+  zip.folder('_rels').file('.rels','<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>');
+  zip.folder('3D').file('3dmodel.model',xml);
+  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});downloadBlob(blob,safeName()+'.3mf');status.textContent='3MF downloaded with separate body and text colours.';
+ }catch(e){console.error(e);status.textContent='3MF export failed. Try refreshing the page.';}
+ finally{btn.disabled=false;}
+});
+rebuild();
+</script>
+</body>
+</html>
